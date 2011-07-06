@@ -1,7 +1,6 @@
 # Majority of the functionality of the scim plugin. It's out in its own module to namespace it
 # from Vim's shared Python interpreter
-import cPickle, os, re, sys, subprocess, vim, zipfile
-from xml.etree import ElementTree
+import os, subprocess, vim
 
 def cursorword():
     start = vim.eval('getpos(".")')
