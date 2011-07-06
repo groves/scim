@@ -15,10 +15,10 @@ else:
     reload(scim)
 EOF
 
-function! ScalaJump()
+function! ScimJump()
     python scim.jump()
 endfunction
 
-function! ScalaImport()
+function! ScimImport()
     python scim.addimport()
 endfunction
