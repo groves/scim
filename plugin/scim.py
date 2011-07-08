@@ -7,13 +7,25 @@ def cursorword():
     vim.command("normal wbyw")
     return vim.eval("getreg()"), start
 
+def open():
+    vim.command('let theUsersInput=input("Class to open: ")')
+    result = vim.eval("theUsersInput")
+    if result is None or result.strip() == "":
+        return
+    navigate(result)
+
 def jump():
-    found = choose_lookup(cursorword()[0])
+    navigate(cursorword()[0])
+
+def navigate(dest):
+    found = choose_lookup(dest)
     if found:
         if found[1].endswith('.html'):
             subprocess.check_call(['open', found[1]])
         else:
             vim.command("edit " + found[1])
+    else:
+        print "Nothing found for", dest
 
 def addimport():
     classname, start = cursorword()

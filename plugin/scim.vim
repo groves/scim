@@ -19,6 +19,10 @@ function! ScimJump()
     python scim.jump()
 endfunction
 
+function! ScimOpen()
+    python scim.open()
+endfunction
+
 function! ScimImport()
     python scim.addimport()
 endfunction
