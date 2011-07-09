@@ -68,8 +68,8 @@ def choose_lookup(classname, scan=True):
         for idx, full in enumerate(fulls):
             print idx + 1, full[0]
         vim.command('let idx=input("Class number or blank to abort: ")')
-        idx = vim.eval("idx").strip()
-        if not idx:
+        idx = vim.eval("idx")
+        if idx is None or idx.strip() == "":
             return None
     return fulls[int(idx) - 1]
 
