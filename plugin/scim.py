@@ -5,7 +5,7 @@ import os, subprocess, vim
 def cursorword():
     start = vim.eval('getpos(".")')
     vim.command("normal wbyw")
-    return vim.eval("getreg()"), start
+    return vim.eval("getreg()").strip(), start
 
 def open():
     vim.command('let theUsersInput=input("Class to open: ")')
