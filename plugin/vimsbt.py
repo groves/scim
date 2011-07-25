@@ -2,13 +2,10 @@ import sbtrunner, subprocess, vim
 
 class ResultLoadingSbt(sbtrunner.Sbt):
     def executed(self, cmd):
-        # We should be doing the following while using the real multiprocessing module in sbtrunner
-        # However, doing so just prints "ScimPostCompile()" to the terminal that launched vim.
-        # Who knows? Using threading and calling directly as the uncommented line does kinda works,
-        # but it complains about some bad NSAutorelease action. I guess there's no way to make this
-        # horse dance.
-        #subprocess.check_call(["vim", "--remote-expr", "'ScimPostCompile()'"])
-        vim.command('call ScimPostCompile()')
+        # We should be doing the following instead of using shell, but  doing so just prints
+        # "ScimPostCompile()" to the terminal that launched vim. Who knows?
+        #subprocess.check_call(["/usr/local/bin/vim", "--remote-expr", "'ScimPostCompile()'"])
+        subprocess.check_call("vim --remote-expr 'ScimPostCompile()'", shell=True)
 
 class SbtContext(object):
     def __init__(self, location):
@@ -61,5 +58,6 @@ def loadcompileresults():
     results = ctx.conn.recv()
     ctx.compilerunning = False
     vim.command('cexpr %s' % results)
+    vim.command("redraw")
     print "Compile finished"
 

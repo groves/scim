@@ -1,8 +1,5 @@
 import os, multiprocessing, re, subprocess
 
-# Use the threading implementation of multiprocessing so our hacked vim commands go through
-import multiprocessing.dummy as multiprocessing
-
 ansi = re.compile("\\x1b\[\d+?m") # -Dsbt.nologformat isn't being respected, so strip ansi colors
 
 debugout = None
@@ -13,7 +10,7 @@ def debug(msg):
     debugout.write("%s\n" % msg)
 
 def run(conn, sbtdir, runnerClass):
-    #os.chdir(sbtdir) This blows up when run from a forked process in MacVim
+    os.chdir(sbtdir)
     runnerClass(conn).run()
 
 class Sbt(object):
