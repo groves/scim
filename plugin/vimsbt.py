@@ -5,45 +5,45 @@ class ResultLoadingSbt(sbtrunner.Sbt):
         # We should be doing the following instead of using shell, but  doing so just prints
         # "ScimPostCompile()" to the terminal that launched vim. Who knows?
         #subprocess.check_call(["/usr/local/bin/vim", "--remote-expr", "'ScimPostCompile()'"])
-        subprocess.check_call("vim --remote-expr 'ScimPostCompile()'", shell=True)
+        subprocess.check_call("vim --remote-expr 'ScimPostRun()'", shell=True)
 
 class SbtContext(object):
     def __init__(self, location):
         self.proc, self.conn = sbtrunner.start(location, ResultLoadingSbt)
         self.location = location
-        self.compilerunning = False
+        self.runningcmd = None
 
     def exit(self):
         self.conn.send("exit")
         self.proc.join()
 
-    def compile(self):
-        self.conn.send("compile")
-        self.compilerunning = True
+    def run(self, cmd):
+        self.conn.send(cmd)
+        self.runningcmd = cmd
 
 ctx = None
 
 def valexists(val):
     return bool(int(vim.eval('exists("%s")' % val)))
 
-def compile():
+def run(cmd):
     global ctx
     if not valexists("g:scim_sbt_dir"):
         print "Set 'g:scim_sbt_dir' to where sbt should be run"
         return
     location = vim.eval("g:scim_sbt_dir")
     if ctx is not None:
-        if ctx.compilerunning:
-            print "Compile running; wait for it to finish"
+        if ctx.runningcmd:
+            print "Running %s; wait for it to finish" % ctx.runningcmd
             return
         elif ctx.location != location:
             print "Restarting sbt in '%s'" % location
             exit()
     if ctx is None:
         ctx = SbtContext(location)
-    ctx.compile()
+    ctx.run(cmd)
     vim.command("redraw")
-    print "Compiling"
+    print "Running", cmd
 
 def exit():
     global ctx
@@ -51,13 +51,14 @@ def exit():
         ctx.exit()
         ctx = None
 
-def loadcompileresults():
-    if ctx is None or not ctx.compilerunning:
-        print "Call compile before calling loadcompileresults"
+def loadrunresults():
+    if ctx is None or not ctx.runningcmd:
+        print "Run a ccommand before calling loadrunresults"
         return
     results = ctx.conn.recv()
-    ctx.compilerunning = False
+    cmd = ctx.runningcmd
+    ctx.runningcmd = None
     vim.command('cexpr %s' % results)
     vim.command("redraw")
-    print "Compile finished"
+    print "Finished", cmd
 

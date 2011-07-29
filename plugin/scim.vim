@@ -31,14 +31,30 @@ endfunction
 
 function! ScimCompile()
     wall
-    python vimsbt.compile()
+    python vimsbt.run("compile")
 endfunction
 
-function! ScimPostCompile()
+function! ScimTest()
+    wall
+    python vimsbt.run("test")
+endfunction
+
+function! ScimPostRun()
     let l:oldefm=&efm
     set errorformat=%E\ %#[error]\ %f:%l:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
        \%W\ %#[warn]\ %f:%l:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
        \%-G%.%#
-    python vimsbt.loadcompileresults()
+    python vimsbt.loadrunresults()
     let &errorformat=l:oldefm
 endfunction
+
+function! ScimVimExit()
+    vimsbt.exit()
+endfunction
+
+augroup scim
+autocmd!
+
+autocmd scim VimLeave * call ScimVimExit()
+
+augroup END
