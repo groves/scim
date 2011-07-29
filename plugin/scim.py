@@ -95,6 +95,10 @@ pathtofull = lambda path: '.'.join(path.split('/'))
 
 def scan_src_dir(base):
     for d, dns, fns in os.walk(base):
+        try:
+            dns.remove('.svn')
+        except:
+            pass
         package = pathtofull(d[len(base) + 1:]) + "."
         for fn in fns:
             yield package + fn.split('.')[0], d + "/" + fn
