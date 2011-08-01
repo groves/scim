@@ -1,4 +1,4 @@
-import os, multiprocessing, re, subprocess
+import os, multiprocessing, re, subprocess, threading
 
 ansi = re.compile("\\x1b\[\d+?m") # -Dsbt.nologformat isn't being respected, so strip ansi colors
 
@@ -53,7 +53,11 @@ class Sbt(object):
 
 def start(sbtdir, runnerClass=Sbt):
     parentconn, childconn = multiprocessing.Pipe()
-    subsbt = multiprocessing.Process(target=run,
+    #  We run this with threading as Sbt.run blocks on IO and is fine with the GIL. If it actually
+    #  did any work, we could switch to subsbt = multiprocessing.Process with no other code changes
+    #  and get around the GIL that way. Making a thread is lighter than forking, so we're doing that
+    #  way while we can.
+    subsbt = threading.Thread(target=run,
             args=(childconn, os.path.expanduser(sbtdir), runnerClass))
     subsbt.start()
     return subsbt, parentconn
