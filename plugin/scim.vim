@@ -49,7 +49,7 @@ function! ScimPostRun()
 endfunction
 
 function! ScimVimExit()
-    vimsbt.exit()
+    python vimsbt.exit()
 endfunction
 
 augroup scim
