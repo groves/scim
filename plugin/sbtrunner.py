@@ -37,8 +37,7 @@ class Sbt(object):
 
     def run(self):
         self.waitforinput()
-        debug("sending ready")
-        self.conn.send("ready")
+        debug("Ready")
         while True:
             cmd = self.conn.recv()
             debug("Running %s" % cmd)
@@ -57,9 +56,7 @@ def start(sbtdir, runnerClass=Sbt):
     subsbt = multiprocessing.Process(target=run,
             args=(childconn, os.path.expanduser(sbtdir), runnerClass))
     subsbt.start()
-    if parentconn.recv() == "ready":
-        return subsbt, parentconn
-    raise Error("Err?")
+    return subsbt, parentconn
 
 if __name__ == "__main__":
     subsbt, conn = start("/Users/charlie/dev/ionic")
