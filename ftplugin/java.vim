@@ -11,6 +11,11 @@ if !exists("b:did_scimplugin")
     endif
     noremap <buffer> <silent> <unique> <Plug>ScimJump :call ScimJump()<CR>
 
+    if !hasmapto('<Plug>ScimJumpOver')
+        map <buffer> <unique> <LocalLeader>J <Plug>ScimJumpOver
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimJumpOver :call ScimJumpOver()<CR>
+
     if !hasmapto('<Plug>ScimImport')
         map <buffer> <unique> <LocalLeader>i <Plug>ScimImport
     endif

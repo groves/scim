@@ -17,6 +17,10 @@ else:
     reload(vimsbt)
 EOF
 
+function! ScimJumpOver()
+    python scim.jump(over=True)
+endfunction
+
 function! ScimJump()
     python scim.jump()
 endfunction
@@ -36,7 +40,7 @@ endfunction
 
 function! ScimTest()
     wall
-    python vimsbt.run("test")
+    python vimsbt.run("test:compile")
 endfunction
 
 function! ScimPostRun()

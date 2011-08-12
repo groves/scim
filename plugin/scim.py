@@ -12,17 +12,19 @@ def open():
     result = vim.eval("theUsersInput")
     if result is None or result.strip() == "":
         return
-    navigate(result)
+    navigate(result, False)
 
-def jump():
-    navigate(cursorword()[0])
+def jump(over=False):
+    navigate(cursorword()[0], over)
 
-def navigate(dest):
+def navigate(dest, over):
     found = choose_lookup(dest)
     if found:
         if found[1].endswith('.html'):
             subprocess.check_call(['open', found[1]])
         else:
+            if over:
+                vim.command("wincmd p")
             vim.command("edit " + found[1])
     else:
         print "Nothing found for", dest
