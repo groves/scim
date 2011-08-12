@@ -120,6 +120,6 @@ def scan_doc_dir(base):
         package = pathtofull(d[len(base) + 1:]) + "."
         for fn in fns:
             # - gets all the java overview bidness
-            if not fn.endswith('.html') or '-' in fn:
+            if not fn.endswith('.html') or '-' in fn or fn == 'index.html':
                 continue
             yield package + fn[:-5].replace('$$', '.'), d + "/" + fn
