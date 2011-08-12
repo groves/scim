@@ -17,17 +17,25 @@ def open():
 def jump(over=False):
     navigate(cursorword()[0], over)
 
+def open_full_class(fullclass):
+    for possible, loc in classname_to_full[fullclass.split('.')[-1]]:
+        if possible == fullclass:
+            openfound(loc)
+
 def navigate(dest, over):
     found = choose_lookup(dest)
     if found:
-        if found[1].endswith('.html'):
-            subprocess.check_call(['open', found[1]])
-        else:
-            if over:
-                vim.command("wincmd p")
-            vim.command("edit " + found[1])
+        openfound(found[1], over)
     else:
         print "Nothing found for", dest
+
+def openfound(found, over=False):
+    if found.endswith('.html'):
+        subprocess.check_call(['open', found])
+    else:
+        if over:
+            vim.command("wincmd p")
+        vim.command("edit " + found)
 
 def addimport():
     classname, start = cursorword()
@@ -50,15 +58,18 @@ def valexists(val):
 last_lookup_paths = []
 classname_to_full = {}
 def lookup(classname, scan_if_not_found=True):
-    global last_lookup_paths
-    if not valexists("g:scim_locations"):
-        print "Set 'g:scim_locations' to a list of as paths"
-        return None, None
-    locs = vim.eval("g:scim_locations")
-    if (scan_if_not_found and not classname in classname_to_full) or last_lookup_paths != locs:
-        scan(locs)
-        last_lookup_paths = locs
+    if (scan_if_not_found and not classname in classname_to_full) or scanneeded():
+        if not scan():
+            return None, None
     return sorted(classname_to_full.get(classname, set()))
+
+def list_classes():
+    if scanneeded():
+        scan()
+    classes = []
+    for entries in classname_to_full.values():
+        classes.extend([f[0] for f in entries])
+    return classes
 
 def choose_lookup(classname, scan=True):
     fulls = lookup(classname, scan)
@@ -81,9 +92,18 @@ def choose_lookup(classname, scan=True):
             return None
     return fulls[int(idx) - 1]
 
-def scan(locs):
+def locs():
+    return vim.eval("g:scim_locations")
+
+def scanneeded():
+    return last_lookup_paths != locs() or not classname_to_full
+
+def scan():
+    if not valexists("g:scim_locations"):
+        print "Set 'g:scim_locations' to a list of as paths"
+        return False
     classname_to_full.clear()
-    for path in locs:
+    for path in locs():
         path = os.path.abspath(os.path.expanduser(path))
         if os.path.isdir(path) and 'docs' in path:
             addclasses(scan_doc_dir(path))
@@ -91,6 +111,9 @@ def scan(locs):
             addclasses(scan_src_dir(path))
         else:
             print "Don't know how to handle", path
+    global last_lookup_paths
+    last_lookup_paths = locs
+    return True
 
 def addclasses(classes):
     for fullname, path in classes:

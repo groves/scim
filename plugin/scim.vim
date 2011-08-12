@@ -56,6 +56,36 @@ function! ScimVimExit()
     python vimsbt.exit()
 endfunction
 
+function! ScimOpenClass()
+    call ScimLoadCommandT()
+    python vim.command('let paths=%s' % scim.list_classes())
+    ruby $command_t.show_finder ClassFinder.new(ListScanner.new VIM::evaluate("paths"))
+endfunction
+
+function! ScimLoadCommandT()
+    if exists("g:loaded_scim_command_t")
+        return
+    endif
+    let g:loaded_scim_command_t = 1
+ruby << EOF
+require 'command-t/scanner'
+require 'command-t/finder/basic_finder'
+
+class ClassFinder < CommandT::BasicFinder
+    def open selection, options
+        ::VIM::command("python scim.open_full_class('#{selection}')")
+    end
+end
+
+class ListScanner < CommandT::Scanner
+    attr_accessor :paths
+    def initialize paths
+        @paths = paths
+    end
+end
+EOF
+endfunction
+
 augroup scim
 autocmd!
 
