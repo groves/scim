@@ -31,10 +31,16 @@ def addimport():
     classname, start = cursorword()
     found = choose_lookup(classname)
     if found:
-        vim.command("let ignored=cursor(0, 0)")# Search for package from the beginning
+        toimport = found[0]
+        if vim.eval('bufname("%")').endswith('.java'):
+            toimport += ";"
+        vimexec("cursor(0, 0)")# Search for package from the beginning
         vim.command("let packageline = search('^package ', 'c')")
-        vim.command('let ignored=append(packageline + 1, "import %s")' % found[0])
-        vim.command("let ignored=cursor(%s + 1, %s)" % (start[1], start[2]))
+        vimexec('append(packageline + 1, "import %s")' % toimport)
+        vimexec("cursor(%s + 1, %s)" % (start[1], start[2]))
+
+def vimexec(cmd):
+    vim.command("let ignored=" + cmd)
 
 def valexists(val):
     return bool(int(vim.eval('exists("%s")' % val)))
