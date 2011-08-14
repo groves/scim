@@ -43,6 +43,12 @@ function! ScimTest()
     python vimsbt.run("test:compile")
 endfunction
 
+function! ScimOpenClass()
+    call s:ScimLoadCommandT()
+    python vim.command('let paths=%s' % scim.list_classes())
+    ruby $command_t.show_finder ClassFinder.new(ListScanner.new VIM::evaluate("paths"))
+endfunction
+
 function! ScimPostRun()
     let l:oldefm=&efm
     set errorformat=%E\ %#[error]\ %f:%l:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
@@ -56,13 +62,45 @@ function! ScimVimExit()
     python vimsbt.exit()
 endfunction
 
-function! ScimOpenClass()
-    call ScimLoadCommandT()
-    python vim.command('let paths=%s' % scim.list_classes())
-    ruby $command_t.show_finder ClassFinder.new(ListScanner.new VIM::evaluate("paths"))
+function! ScimBindings()
+    " Add mappings, unless the user didn't want this.
+    if exists("b:did_scimplugin")
+        return
+    endif
+    let b:did_scimplugin = 1
+
+    if !hasmapto('<Plug>ScimJump')
+        map <buffer> <unique> <LocalLeader>j <Plug>ScimJump
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimJump :call ScimJump()<CR>
+
+    if !hasmapto('<Plug>ScimJumpOver')
+        map <buffer> <unique> <LocalLeader>J <Plug>ScimJumpOver
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimJumpOver :call ScimJumpOver()<CR>
+
+    if !hasmapto('<Plug>ScimImport')
+        map <buffer> <unique> <LocalLeader>i <Plug>ScimImport
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimImport :call ScimImport()<CR>
+
+    if !hasmapto('<Plug>ScimCompile')
+        map <buffer> <unique> <LocalLeader>c <Plug>ScimCompile
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimCompile :call ScimCompile()<CR>
+
+    if !hasmapto('<Plug>ScimTest')
+        map <buffer> <unique> <LocalLeader>u <Plug>ScimTest
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimTest :call ScimTest()<CR>
+
+    if !hasmapto('<Plug>ScimOpenClass')
+        map <buffer> <unique> <LocalLeader>o <Plug>ScimOpenClass
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimOpenClass :call ScimOpenClass()<CR>
 endfunction
 
-function! ScimLoadCommandT()
+function! s:ScimLoadCommandT()
     if exists("g:loaded_scim_command_t")
         return
     endif
@@ -74,6 +112,10 @@ require 'command-t/finder/basic_finder'
 class ClassFinder < CommandT::BasicFinder
     def open selection, options
         ::VIM::command("python scim.open_full_class('#{selection}')")
+    end
+
+    def bufferBased?
+        false
     end
 end
 
