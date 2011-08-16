@@ -112,7 +112,7 @@ def scan():
         else:
             print "Don't know how to handle", path
     global last_lookup_paths
-    last_lookup_paths = locs
+    last_lookup_paths = locs()
     return True
 
 def addclasses(classes):
