@@ -18,19 +18,15 @@ else:
 EOF
 
 function! ScimJumpOver()
-    python scim.jump(over=True)
+    python scim.i.jump(over=True)
 endfunction
 
 function! ScimJump()
-    python scim.jump()
-endfunction
-
-function! ScimOpen()
-    python scim.open()
+    python scim.i.jump()
 endfunction
 
 function! ScimImport()
-    python scim.addimport()
+    python scim.i.addimport()
 endfunction
 
 function! ScimCompile()
@@ -45,7 +41,7 @@ endfunction
 
 function! ScimOpenClass()
     call s:ScimLoadCommandT()
-    python vim.command('let paths=%s' % scim.list_classes())
+    python vim.command('let paths=%s' % scim.i.list_classes())
     ruby $command_t.show_finder ClassFinder.new(ListScanner.new VIM::evaluate("paths"))
 endfunction
 
@@ -111,7 +107,7 @@ require 'command-t/finder/basic_finder'
 
 class ClassFinder < CommandT::BasicFinder
     def open selection, options
-        ::VIM::command("python scim.open_full_class('#{selection}')")
+        ::VIM::command("python scim.i.open('#{selection}')")
     end
 
     def bufferBased?
