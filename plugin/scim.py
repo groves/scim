@@ -28,6 +28,8 @@ class Scim(object):
     def __init__(self):
         self.last_paths = []
         self.classname_to_full = {}
+        self.choices = {}
+        self.lastchoice = None
 
     def jump(self, over=False):
         self.navigate(cursorword()[0], over)
@@ -81,6 +83,10 @@ class Scim(object):
 
         if len(fulls) == 1:
             idx = "1"
+        elif classname in self.choices:
+            choice = self.choices[classname]
+            print "Reused last choice %s. Use <leader>r to clear the cache" % choice[0]
+            return choice
         else:
             print "Multiple classes found for", classname
             for idx, full in enumerate(fulls):
@@ -88,7 +94,10 @@ class Scim(object):
             idx = vim.eval('input("Class number or blank to abort: ")')
             if idx is None or idx.strip() == "":
                 return None
-        return fulls[int(idx) - 1]
+        idx = int(idx) - 1
+        self.choices[classname] = fulls[idx]
+        self.lastchoice = classname
+        return fulls[idx]
 
     def scanneeded(self):
         return self.last_paths != locs() or not self.classname_to_full

@@ -29,6 +29,11 @@ function! ScimImport()
     python scim.i.addimport()
 endfunction
 
+function! ScimClearLookupCache()
+    python del scim.i.choices[scim.i.lastchoice]
+    python print "Cleared %s. Try again!" % scim.i.lastchoice
+endfunction
+
 function! ScimCompile()
     wall
     python vimsbt.run("compile")
@@ -68,17 +73,17 @@ function! ScimBindings()
     if !hasmapto('<Plug>ScimJump')
         map <buffer> <unique> <LocalLeader>j <Plug>ScimJump
     endif
-    noremap <buffer> <silent> <unique> <Plug>ScimJump :call ScimJump()<CR>
+    noremap <buffer> <unique> <Plug>ScimJump :call ScimJump()<CR>
 
     if !hasmapto('<Plug>ScimJumpOver')
         map <buffer> <unique> <LocalLeader>J <Plug>ScimJumpOver
     endif
-    noremap <buffer> <silent> <unique> <Plug>ScimJumpOver :call ScimJumpOver()<CR>
+    noremap <buffer> <unique> <Plug>ScimJumpOver :call ScimJumpOver()<CR>
 
     if !hasmapto('<Plug>ScimImport')
         map <buffer> <unique> <LocalLeader>i <Plug>ScimImport
     endif
-    noremap <buffer> <silent> <unique> <Plug>ScimImport :call ScimImport()<CR>
+    noremap <buffer> <unique> <Plug>ScimImport :call ScimImport()<CR>
 
     if !hasmapto('<Plug>ScimCompile')
         map <buffer> <unique> <LocalLeader>c <Plug>ScimCompile
@@ -94,6 +99,11 @@ function! ScimBindings()
         map <buffer> <unique> <LocalLeader>o <Plug>ScimOpenClass
     endif
     noremap <buffer> <silent> <unique> <Plug>ScimOpenClass :call ScimOpenClass()<CR>
+
+    if !hasmapto('<Plug>ScimClearLookupCache')
+        map <buffer> <unique> <LocalLeader>r <Plug>ScimClearLookupCache
+    endif
+    noremap <buffer> <silent> <unique> <Plug>ScimClearLookupCache :call ScimClearLookupCache()<CR>
 endfunction
 
 function! s:ScimLoadCommandT()
