@@ -2,11 +2,6 @@
 # from Vim's shared Python interpreter
 import os, subprocess, vim
 
-def cursorword():
-    start = vim.eval('getpos(".")')
-    vim.command("normal wbyw")
-    return vim.eval("getreg()").strip(), start
-
 def openfound(found, over=False):
     if found.endswith('.html'):
         subprocess.check_call(['open', found])
@@ -32,7 +27,7 @@ class Scim(object):
         self.lastchoice = None
 
     def jump(self, over=False):
-        self.navigate(cursorword()[0], over)
+        self.navigate(vim.eval('expand("<cword>")'), over)
 
     def open(self, fullclass):
         for possible, loc in self.lookup(fullclass.split('.')[-1]):
@@ -47,16 +42,16 @@ class Scim(object):
             print "Nothing found for", dest
 
     def addimport(self):
-        classname, start = cursorword()
-        found = self.choose(classname)
+        found = self.choose(vim.eval('expand("<cword>")'))
         if found:
             toimport = found[0]
             if vim.eval('bufname("%")').endswith('.java'):
                 toimport += ";"
+            vim.command('let s:startpos = getpos(".")')
             vimexec("cursor(0, 0)")# Search for package from the beginning
             vim.command("let packageline = search('^package ', 'c')")
             vimexec('append(packageline + 1, "import %s")' % toimport)
-            vimexec("cursor(%s + 1, %s)" % (start[1], start[2]))
+            vimexec("cursor(s:startpos[1] + 1, s:startpos[2])")
 
     def lookup(self, classname, scan_if_not_found=True):
         if (scan_if_not_found and not classname in self.classname_to_full) or self.scanneeded():
