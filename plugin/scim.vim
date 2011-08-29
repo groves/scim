@@ -21,7 +21,7 @@ function! ScimJumpOver()
     python scim.i.jump(over=True)
 endfunction
 
-function! ScimJump()
+function! ScimJumpCurrent()
     python scim.i.jump()
 endfunction
 
@@ -70,10 +70,10 @@ function! ScimBindings()
     endif
     let b:did_scimplugin = 1
 
-    if !hasmapto('<Plug>ScimJump')
-        map <buffer> <unique> <LocalLeader>j <Plug>ScimJump
+    if !hasmapto('<Plug>ScimJumpCurrent')
+        map <buffer> <unique> <LocalLeader>j <Plug>ScimJumpCurrent
     endif
-    noremap <buffer> <unique> <Plug>ScimJump :call ScimJump()<CR>
+    noremap <buffer> <unique> <Plug>ScimJumpCurrent :call ScimJumpCurrent()<CR>
 
     if !hasmapto('<Plug>ScimJumpOver')
         map <buffer> <unique> <LocalLeader>J <Plug>ScimJumpOver
