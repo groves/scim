@@ -1,4 +1,4 @@
-import os, multiprocessing, re, subprocess, threading
+import os, multiprocessing, multiprocessing.connection, re, subprocess, sys
 
 ansi = re.compile("\\x1b\[\d+?m") # -Dsbt.nologformat isn't being respected, so strip ansi colors
 
@@ -16,7 +16,7 @@ def run(conn, sbtdir, runnerClass):
 class Sbt(object):
     def __init__(self, conn):
         self.conn = conn
-        self.proc = subprocess.Popen(["sbt", "-Dsbt.nologformat=true"], stdin=subprocess.PIPE,
+        self.proc = subprocess.Popen(["sbt"], stdin=subprocess.PIPE,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     def waitforinput(self):
@@ -24,6 +24,7 @@ class Sbt(object):
         output = [""]
         while True:
             char = self.proc.stdout.read(1)
+            sys.stdout.write(char)
             if output[-1] == "" and char == ">":
                 return output[:-1]
             if char == "\n":
@@ -53,18 +54,32 @@ class Sbt(object):
 
 def start(sbtdir, runnerClass=Sbt):
     parentconn, childconn = multiprocessing.Pipe()
-    #  We run this with threading as Sbt.run blocks on IO and is fine with the GIL. If it actually
-    #  did any work, we could switch to subsbt = multiprocessing.Process with no other code changes
-    #  and get around the GIL that way. Making a thread is lighter than forking, so we're doing that
-    #  way while we can.
-    subsbt = threading.Thread(target=run,
+    subsbt = multiprocessing.Process(target=run,
             args=(childconn, os.path.expanduser(sbtdir), runnerClass))
     subsbt.start()
     return subsbt, parentconn
 
 if __name__ == "__main__":
-    subsbt, conn = start("/Users/charlie/dev/ionic")
-    conn.send("compile")
-    print conn.recv()
-    conn.send("exit")
-    subsbt.join()
+    subsbt, conn, sbtdir = (None, None, None)
+    listener = multiprocessing.connection.Listener(('localhost', 6000))
+    print "Listening"
+    while True:
+        lconn = listener.accept()
+        received, cmddir, resultcommand, outputlocation = lconn.recv()
+        lconn.close()
+        if received == "exit":
+            if sbtdir:
+                conn.send(received)
+                subsbt.join()
+            sbtdir = None
+            continue
+        if cmddir != sbtdir:
+            if sbtdir:
+                conn.send("exit")
+                subsbt.join()
+            subsbt, conn = start(cmddir)
+            sbtdir = cmddir
+        conn.send(received)
+        debug("Writing to %s" % outputlocation)
+        open(outputlocation, "w").write("\n".join(conn.recv()))
+        subprocess.call(resultcommand, shell=True)

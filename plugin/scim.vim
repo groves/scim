@@ -10,11 +10,10 @@ import sys, vim
 scimdir = vim.eval('expand("<sfile>:h")')
 if not scimdir in sys.path:
     sys.path.append(scimdir)
-    import scim, vimsbt
+    import scim
 else:
-    vimsbt.exit()
+    scim.sbtrun("exit")
     reload(scim)
-    reload(vimsbt)
 EOF
 
 function! ScimJumpOver()
@@ -34,14 +33,9 @@ function! ScimClearLookupCache()
     python print "Cleared %s. Try again!" % scim.i.lastchoice
 endfunction
 
-function! ScimCompile()
+function! ScimRun(cmd)
     wall
-    python vimsbt.run("compile")
-endfunction
-
-function! ScimTest()
-    wall
-    python vimsbt.run("test:compile")
+    python scim.sbtrun(vim.eval("a:cmd"))
 endfunction
 
 function! ScimOpenClass()
@@ -55,12 +49,8 @@ function! ScimPostRun()
     set errorformat=%E\ %#[error]\ %f:%l:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
        \%W\ %#[warn]\ %f:%l:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
        \%-G%.%#
-    python vimsbt.loadrunresults()
+    cfile /tmp/sbtout
     let &errorformat=l:oldefm
-endfunction
-
-function! ScimVimExit()
-    python vimsbt.exit()
 endfunction
 
 function! ScimBindings()
@@ -137,6 +127,6 @@ endfunction
 augroup scim
 autocmd!
 
-autocmd scim VimLeave * call ScimVimExit()
+autocmd scim VimLeave * call s:ScimRun("exit")
 
 augroup END

@@ -1,6 +1,12 @@
 # Majority of the functionality of the scim plugin. It's out in its own module to namespace it
 # from Vim's shared Python interpreter
-import os, subprocess, vim
+import multiprocessing.connection, os, subprocess, vim
+
+def sbtrun(cmd):
+    client = multiprocessing.connection.Client(('localhost', 6000))
+    client.send((cmd, vim.eval("g:scim_sbt_dir"), "vim --remote-expr 'ScimPostRun()'",
+        "/tmp/sbtout"))
+    client.close()
 
 def openfound(found, over=False):
     if found.endswith('.html'):
