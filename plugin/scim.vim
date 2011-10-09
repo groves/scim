@@ -51,6 +51,7 @@ function! ScimPostRun()
        \%-G%.%#
     cfile /tmp/sbtout
     let &errorformat=l:oldefm
+    redraw
 endfunction
 
 function! ScimBindings()
