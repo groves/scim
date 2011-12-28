@@ -59,27 +59,44 @@ def start(sbtdir, runnerClass=Sbt):
     subsbt.start()
     return subsbt, parentconn
 
-if __name__ == "__main__":
-    subsbt, conn, sbtdir = (None, None, None)
-    listener = multiprocessing.connection.Listener(('localhost', 6000))
-    print "Listening"
-    while True:
-        lconn = listener.accept()
-        received, cmddir, resultcommand, outputlocation = lconn.recv()
-        lconn.close()
+
+class Server(object):
+    def __init__(self):
+        self.subsbt = None
+        self.conn = None
+        self.sbtdir = None
+        self.listener = multiprocessing.connection.Listener(('localhost', 6000))
+
+    def handleCmd(self):
+        lconn = self.listener.accept()
+        try:
+            received, cmddir, resultcommand, outputlocation = lconn.recv()
+        finally:
+            lconn.close()
         if received == "exit":
-            if sbtdir:
-                conn.send(received)
-                subsbt.join()
-            sbtdir = None
-            continue
-        if cmddir != sbtdir:
-            if sbtdir:
-                conn.send("exit")
-                subsbt.join()
-            subsbt, conn = start(cmddir)
-            sbtdir = cmddir
-        conn.send(received)
+            self.exit()
+            return
+        if cmddir != self.sbtdir:
+            self.exit()
+            self.subsbt, self.conn = start(cmddir)
+            self.sbtdir = cmddir
+        self.conn.send(received)
         debug("Writing to %s" % outputlocation)
-        open(outputlocation, "w").write("\n".join(conn.recv()))
+        open(outputlocation, "w").write("\n".join(self.conn.recv()))
         subprocess.call(resultcommand, shell=True)
+
+    def exit(self):
+        if self.sbtdir:
+            self.conn.send("exit")
+            self.subsbt.join()
+        self.sbtdir = None
+
+if __name__ == "__main__":
+    server = Server()
+    try:
+        while True:
+            server.handleCmd()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.exit()

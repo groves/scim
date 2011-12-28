@@ -12,7 +12,10 @@ if not scimdir in sys.path:
     sys.path.append(scimdir)
     import scim
 else:
-    scim.sbtrun("exit")
+    try:
+        scim.sbtrun("exit")
+    except:
+        pass
     reload(scim)
 EOF
 
