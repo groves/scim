@@ -79,11 +79,6 @@ function! ScimBindings()
     endif
     noremap <buffer> <unique> <Plug>ScimImport :call ScimImport()<CR>
 
-    if !hasmapto('<Plug>ScimCompile')
-        map <buffer> <unique> <LocalLeader>c <Plug>ScimCompile
-    endif
-    noremap <buffer> <silent> <unique> <Plug>ScimCompile :call ScimCompile()<CR>
-
     if !hasmapto('<Plug>ScimTest')
         map <buffer> <unique> <LocalLeader>u <Plug>ScimTest
     endif
