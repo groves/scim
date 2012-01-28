@@ -4,7 +4,7 @@ import multiprocessing.connection, os, subprocess, vim
 
 def sbtrun(cmd):
     client = multiprocessing.connection.Client(('localhost', 6000))
-    client.send((cmd, vim.eval("g:scim_sbt_dir"), "vim --remote-expr 'ScimPostRun()'",
+    client.send((cmd, vim.eval("g:scim_sbt_dir"), """vim --remote-expr 'ScimPostRun("%s")'""" % cmd,
         "/tmp/sbtout"))
     client.close()
 

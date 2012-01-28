@@ -38,6 +38,8 @@ endfunction
 
 function! ScimRun(cmd)
     wall
+    redraw
+    echo "Sbt running ".a:cmd
     python scim.sbtrun(vim.eval("a:cmd"))
 endfunction
 
@@ -47,7 +49,7 @@ function! ScimOpenClass()
     ruby $command_t.show_finder ClassFinder.new(ListScanner.new VIM::evaluate("paths"))
 endfunction
 
-function! ScimPostRun()
+function! ScimPostRun(cmd)
     let l:oldefm=&efm
     set errorformat=%E\ %#[error]\ %f:%l:\ %m,%C\ %#[error]\ %p^,%-C%.%#,%Z,
        \%W\ %#[warn]\ %f:%l:\ %m,%C\ %#[warn]\ %p^,%-C%.%#,%Z,
@@ -55,6 +57,7 @@ function! ScimPostRun()
     cfile /tmp/sbtout
     let &errorformat=l:oldefm
     redraw
+    echo "Sbt finished ".a:cmd
 endfunction
 
 function! ScimBindings()
